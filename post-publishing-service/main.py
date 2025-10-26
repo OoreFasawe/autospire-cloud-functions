@@ -4,8 +4,7 @@ import requests
 import Utility
 from firebase_functions import https_fn
 from flask import jsonify
-from Post import Post
-from shared.Post import Post
+from shared.Classes.Post import Post
 
 
 base_ig_url = "https://graph.instagram.com/"
