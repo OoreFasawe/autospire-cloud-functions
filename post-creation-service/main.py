@@ -199,8 +199,6 @@ class PostCreationService(object):
         input={
                 "prompt": text,
                 "seconds": 4,
-                "aspect_ratio": "landscape",
-                "input_reference": "https://replicate.delivery/pbxt/Nv0Z9AJHJYls2BQ454I4ZWxPO9gXr4VaaigGeWOo4mi4L2f7/replicate-prediction-7swvy5ghpnrmc0ct0a780kb124.jpeg"
             }
         )
 
@@ -212,8 +210,9 @@ class PostCreationService(object):
         # mediaUrl = videoCompletion["data"][0]["url"]
         # logging.debug(f"\n{mediaUrl}\n")
         # return mediaUrl
+        print(videoUrl)
         return videoUrl
-        
+
     def createFileName(self):
         logging.info("Creating post file name...")
         postCollection = PostCreationService.db.collection("posts")
@@ -249,5 +248,5 @@ def main(request):
 # demo functionality
 if __name__ == "__main__":
     p = PostCreationService()
-    newPost = p.generateVideo("Video of a person walking down a street in a city, looking at the camera and smiling.")
+    newPost = p.generateVideo("A robot typing on a glowing holographic keyboard in a dimly lit futuristic workspace.")
     # p.savePost(newPost)
