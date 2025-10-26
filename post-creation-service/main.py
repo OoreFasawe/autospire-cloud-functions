@@ -9,7 +9,7 @@ import sys
 from firebase_admin import firestore, credentials, storage
 from firebase_functions import https_fn
 from flask import jsonify
-from shared.Classes.Post import Post
+from post_model import Post
 from openai import OpenAI 
 
 logging.basicConfig(
@@ -189,7 +189,31 @@ class PostCreationService(object):
         mediaUrl = image_url #imageCompletion["data"][0]["url"]
         logging.info(f"Image url: {mediaUrl}\n")
         return mediaUrl
-    
+
+    def generateVideo(self, text):
+        logging.info("Generating video...")
+
+        # Using replicate to generate video for now
+        videoUrl = replicate.run(
+        "openai/sora-2",
+        input={
+                "prompt": text,
+                "seconds": 4,
+                "aspect_ratio": "landscape",
+                "input_reference": "https://replicate.delivery/pbxt/Nv0Z9AJHJYls2BQ454I4ZWxPO9gXr4VaaigGeWOo4mi4L2f7/replicate-prediction-7swvy5ghpnrmc0ct0a780kb124.jpeg"
+            }
+        )
+
+        # videoCompletion = PostCreationService.client.videos.create(
+        #         model="sora-2",
+        #         prompt=text,
+        #         seconds="4"
+        #     ).to_dict()
+        # mediaUrl = videoCompletion["data"][0]["url"]
+        # logging.debug(f"\n{mediaUrl}\n")
+        # return mediaUrl
+        return videoUrl
+        
     def createFileName(self):
         logging.info("Creating post file name...")
         postCollection = PostCreationService.db.collection("posts")
@@ -221,3 +245,9 @@ def main(request):
     response=jsonify({"fileName": newPost.fileName, "mediaUrl": newPost.mediaUrl, "caption": newPost.caption, "hashtags": newPost.hashtags}).get_data(as_text=True), 
     content_type="application/json"
     )
+
+# demo functionality
+if __name__ == "__main__":
+    p = PostCreationService()
+    newPost = p.generateVideo("Video of a person walking down a street in a city, looking at the camera and smiling.")
+    # p.savePost(newPost)
