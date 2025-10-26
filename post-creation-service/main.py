@@ -9,7 +9,7 @@ import sys
 from firebase_admin import firestore, credentials, storage
 from firebase_functions import https_fn
 from flask import jsonify
-from Post import Post
+from shared.Post import Post
 from openai import OpenAI 
 
 logging.basicConfig(
