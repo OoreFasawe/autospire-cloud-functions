@@ -4,21 +4,19 @@ import requests
 import Utility
 from firebase_functions import https_fn
 from flask import jsonify
-from shared.Classes.Post import Post
+from post_model import Post
 
 
 base_ig_url = "https://graph.instagram.com/"
-base_fb_url = "https://graph.facebook.com/"
 params = {}
 userData = {}
 
 logging.basicConfig(
     format="%(asctime)s %(levelname)s: %(message)s",
-    level=os.environ.get("LOG_LEVEL", "INFO"),
+    level=os.environ.get("LOG_LEVEL", "DEBUG"),
 )
 
 class PostPublishingService:
-    instagram_access_token = os.environ.get("INSTAGRAM_ACCESS_TOKEN")
     # Singleton design pattern in python.
     def __new__(cls):
         if not hasattr(cls, 'instance'):
@@ -26,6 +24,7 @@ class PostPublishingService:
         return cls.instance 
 
     def publishPost(self, post:Post):
+        # change once verified
         logging.info("Starting Post Publishing Service")
         userData = self.getUserDetails()
         if not userData:
@@ -33,6 +32,9 @@ class PostPublishingService:
             return None
         userId = userData["user_id"]
         containerId = self.createMediaContainer(userId, post)
+        check_status_uri = f"https://graph.instagram.com/{containerId}?fields=status_code&access_token={Utility.get_token()}"
+        success = Utility.is_upload_successful(0, check_status_uri)
+        logging.info(f"Upload completed" if success else f"Upload failed")
         mediaId = self.publishMediaContainer(userId, containerId)
         return mediaId
     
@@ -82,6 +84,22 @@ class PostPublishingService:
         logging.info(f"Media container created, container id: {containerId}\n")
         return containerId
 
+    def createVideoContainer(self, userId, post:Post):
+        logging.info(f"Creating video container...")
+        access_token = Utility.get_token()
+        if not access_token:
+            logging.error("Instagram access token not found.")
+            return None
+        params["access_token"] = access_token
+        params["media_type"] = "REELS"
+        params["video_url"] = post.mediaUrl
+        params["caption"] = post.caption + "\n\n" + post.hashtags
+        response = requests.post(base_ig_url + f"{userId}/media", json=params)
+        logging.debug(f"Publishing video container response details: {response.json()}")
+        videoContainerId = response.json()["id"]
+        logging.info(f"Video container created, container id: {videoContainerId}\n")
+        return videoContainerId
+
     def publishMediaContainer(self, userId, containerId):
         logging.info(f"Publishing post...")
         params["access_token"] = Utility.get_token()
@@ -92,7 +110,6 @@ class PostPublishingService:
         params["creation_id"] = None
         logging.info(f"Post published, media id: {mediaId}\n")
         return mediaId
-
     
 @https_fn.on_request()
 def main(request):
@@ -133,3 +150,8 @@ def main(request):
         response=jsonify({"mediaId": media_id}).get_data(as_text=True),
         content_type="application/json"
     )
+
+if __name__ == "__main__":
+    p = PostPublishingService()
+    newPost = p.publishPost(Post("random", mediaUrl="https://firebasestorage.googleapis.com/v0/b/instagram-autobot-df35b.appspot.com/o/Post%23122%2FPost%23122_1.jpg?alt=media&token=2bb102ad-9bf8-4f88-8c33-07c94c3ba57a", caption="Another one", hashtags="#RunItBack"))
+    # p.savePost(newPost)

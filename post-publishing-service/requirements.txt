@@ -4,4 +4,3 @@ requests==2.32.3
 google-cloud-firestore
 google-cloud-secret-manager
 google-auth
--e ../shared

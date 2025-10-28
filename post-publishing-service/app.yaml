@@ -1,0 +1,2 @@
+runtime: python313
+entrypoint: functions-framework --target=main
