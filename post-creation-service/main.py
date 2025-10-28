@@ -282,8 +282,8 @@ def main(request):
     content_type="application/json"
     )
 
-# demo functionality
-if __name__ == "__main__":
-    p = PostCreationService()
-    newPost = p.createPost()
+# # demo functionality
+# if __name__ == "__main__":
+#     p = PostCreationService()
+#     newPost = p.createPost()
     # p.savePost(newPost)
