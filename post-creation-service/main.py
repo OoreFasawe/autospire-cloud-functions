@@ -9,7 +9,9 @@ import sys
 from firebase_admin import firestore, credentials, storage
 from firebase_functions import https_fn
 from flask import jsonify
-from post_model import Post
+from Classes.post_model import Post
+from Classes.image_post_model import ImagePost
+from Classes.video_post_model import VideoPost
 from openai import OpenAI 
 
 logging.basicConfig(
@@ -32,12 +34,8 @@ class PostCreationService(object):
         return cls.instance
 
     def createPost(self):
-        previousPosts = self.retrieveList("./tmp/previousPosts.txt")
-        newPost = Post()
-        newPost.caption = self.generateCaption(previousPosts)
-        newPost.hashtags = self.generateHashtags(newPost.caption)
-        newPost.mediaUrl = self.generateImage(newPost.caption)
-        newPost.fileName = self.createFileName()
+        postType = random.choice([ImagePost, VideoPost])
+        newPost = postType().createPost(creationServiceToUse=self)
         return newPost
 
     def savePost(self, post: Post):
@@ -193,13 +191,52 @@ class PostCreationService(object):
     def generateVideo(self, text):
         logging.info("Generating video...")
 
+        # Define categories with possible values
+        video_styles = ["cinematic realism", "documentary style", "anime action", "dreamlike surrealism", "digital art motion"]
+        camera_movements = ["slow pan", "tracking shot", "handheld movement", "steady drone shot", "dynamic zoom-in"]
+        lighting_moods = ["golden hour sunlight", "rainy night neon lights", "soft morning haze", "studio lighting", "moonlit scene"]
+        temporal_paces = ["slow and emotional", "steady natural pacing", "fast energetic rhythm", "time-lapse motion", "dramatic slow-motion"]
+        visual_textures = ["crisp and detailed", "grainy film aesthetic", "soft focus blur", "clean digital look", "vintage tone"]
+        color_palettes = ["warm orange-teal", "muted earth tones", "cool futuristic blues", "pastel gradient hues", "black and white contrast"]
+        subjects = ["a lone traveler", "a team celebrating victory", "an athlete training", "a person finding peace", "a symbolic animal in motion"]
+
+        # Construct preprompt for video generation
+        videoGenerationPrePrompt = (
+            f"Create a detailed 4 second **video generation prompt** for the motivational caption '{text}'. "
+            "The prompt must have two structured sections:\n\n"
+            "1. **Main Theme:** Describe the scene, emotion, and key visual story. Focus on what happens, who/what moves, and what the camera captures. Avoid abstract or symbolic phrasing — make it tangible and cinematic.\n"
+            "2. **Style & Motion Options:** Specify stylistic choices for animation and cinematography. Include options for:\n"
+            f"video style = {random.choice(video_styles)}\n"
+            f"camera movement = {random.choice(camera_movements)}\n"
+            f"lighting = {random.choice(lighting_moods)}\n"
+            f"temporal pace = {random.choice(temporal_paces)}\n"
+            f"texture = {random.choice(visual_textures)}\n"
+            f"color palette = {random.choice(color_palettes)}\n"
+            f"subject = {random.choice(subjects)}\n\n"
+            "The output should read like a creative director describing the final video scene, suitable for a 4-second short cinematic shot. "
+            "Do not include any on-screen text or subtitles."
+        )
+
+        # Request video generation prompt
+        videoGenerationPrompt = PostCreationService.client.chat.completions.create(
+            model="gpt-4o-mini",
+            messages=[{"role": "user", "content": videoGenerationPrePrompt}],
+        ).to_dict()
+
+        vidPrompt = videoGenerationPrompt["choices"][0]["message"]["content"]
+        logging.debug(f"\n{vidPrompt}\n")
+
+
         # Using replicate to generate video for now
+        # Image generation
+        input = {
+            "prompt": text,
+            "seconds": 4,
+        }
+
         videoUrl = replicate.run(
         "openai/sora-2",
-        input={
-                "prompt": text,
-                "seconds": 4,
-            }
+        input=input
         )
 
         # videoCompletion = PostCreationService.client.videos.create(
@@ -210,7 +247,7 @@ class PostCreationService(object):
         # mediaUrl = videoCompletion["data"][0]["url"]
         # logging.debug(f"\n{mediaUrl}\n")
         # return mediaUrl
-        print(videoUrl)
+        logging.info(f"Video url: {videoUrl}\n")
         return videoUrl
 
     def createFileName(self):
@@ -248,5 +285,5 @@ def main(request):
 # demo functionality
 if __name__ == "__main__":
     p = PostCreationService()
-    newPost = p.generateVideo("A robot typing on a glowing holographic keyboard in a dimly lit futuristic workspace.")
+    newPost = p.createPost()
     # p.savePost(newPost)
