@@ -35,7 +35,7 @@ class PostCreationService(object):
 
     def createPost(self):
         postType = random.choice([ImagePost, VideoPost])
-        newPost = VideoPost().createPost(creationServiceToUse=self)
+        newPost = ImagePost().createPost(creationServiceToUse=self)
         return newPost
 
     def savePost(self, post: Post):
