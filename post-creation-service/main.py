@@ -35,22 +35,28 @@ class PostCreationService(object):
 
     def createPost(self):
         postType = random.choice([ImagePost, VideoPost])
-        newPost = postType().createPost(creationServiceToUse=self)
+        newPost = VideoPost().createPost(creationServiceToUse=self)
         return newPost
 
     def savePost(self, post: Post):
         # save to firebase storage
         logging.info(f"Saving {post.fileName} to database...")
-        blob = PostCreationService.bucket.blob(f"{post.fileName}.jpg")
+        blob = PostCreationService.bucket.blob(
+            f"{post.fileName}.jpg" if isinstance(post, ImagePost) else f"{post.fileName}.mp4"
+        )
         imageData = requests.get(post.mediaUrl).content
         blob.upload_from_string(
             imageData,
-            content_type='image/jpg'
+            content_type='image/jpg' if isinstance(post, ImagePost) else 'video/mp4'
         )
         # change temporary url to firebase permanent url and store in database
         post.mediaUrl = blob.public_url
         blob.make_public()
-        PostCreationService.db.collection("posts").add(document_id=post.fileName, document_data={"document" "text": post.caption, "hashtags": post.hashtags, "mediaUrl": post.mediaUrl})
+        PostCreationService.db.collection("posts").document(post.fileName).set({
+            "text": post.caption,
+            "hashtags": post.hashtags,
+            "mediaUrl": post.mediaUrl,
+        })
         # update previous post cache 
         self.updateMostPreviousPosts(post.caption)
         logging.info(f"Saved {post.fileName} to database. Public url: {post.mediaUrl}\n")
@@ -282,8 +288,8 @@ def main(request):
     content_type="application/json"
     )
 
-# # demo functionality
-# if __name__ == "__main__":
-#     p = PostCreationService()
-#     newPost = p.createPost()
-    # p.savePost(newPost)
+# demo functionality
+if __name__ == "__main__":
+    p = PostCreationService()
+    newPost = p.createPost()
+    p.savePost(newPost)
