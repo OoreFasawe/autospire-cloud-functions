@@ -1,15 +1,23 @@
 import logging
 import os
+from tkinter import Image
 import requests
 import Utility
 from firebase_functions import https_fn
 from flask import jsonify
-from post_model import Post
+from Classes.post_model import Post
+from Classes.image_post_model import ImagePost
+from Classes.video_post_model import VideoPost
 
 
 base_ig_url = "https://graph.instagram.com/"
 params = {}
 userData = {}
+
+postTypeToCassDict = {
+    "IMAGE": ImagePost,
+    "VIDEO": VideoPost,
+}
 
 logging.basicConfig(
     format="%(asctime)s %(levelname)s: %(message)s",
@@ -24,18 +32,7 @@ class PostPublishingService:
         return cls.instance 
 
     def publishPost(self, post:Post):
-        # change once verified
-        logging.info("Starting Post Publishing Service")
-        userData = self.getUserDetails()
-        if not userData:
-            logging.error("Error retrieving user details.")
-            return None
-        userId = userData["user_id"]
-        containerId = self.createMediaContainer(userId, post)
-        check_status_uri = f"https://graph.instagram.com/{containerId}?fields=status_code&access_token={Utility.get_token()}"
-        success = Utility.is_upload_successful(0, check_status_uri)
-        logging.info(f"Upload completed" if success else f"Upload failed")
-        mediaId = self.publishMediaContainer(userId, containerId)
+        mediaId = post.publishPost(publishingServiceToUse=self)
         return mediaId
     
     def getUserDetails(self):
@@ -102,6 +99,9 @@ class PostPublishingService:
 
     def publishMediaContainer(self, userId, containerId):
         logging.info(f"Publishing post...")
+        check_status_uri = f"https://graph.instagram.com/{containerId}?fields=status_code&access_token={Utility.get_token()}"
+        success = Utility.is_upload_successful(0, check_status_uri)
+        logging.info(f"Upload completed" if success else f"Upload failed")
         params["access_token"] = Utility.get_token()
         params["creation_id"] = containerId
         response = requests.post(base_ig_url + f"{userId}/media_publish", params)
@@ -124,13 +124,15 @@ def main(request):
         post_fileName = request_json.get("fileName")
         post_hashtags = request_json.get("hashtags")
         post_mediaUrl = request_json.get("mediaUrl")
+        post_type = request_json.get("postType")
+        postType = postTypeToCassDict[post_type]
         if not (post_caption and post_fileName and post_hashtags and post_mediaUrl):
             return https_fn.Response(
                 response=jsonify({"error": "Incomplete Post information, exiting"}).get_data(as_text=True),
                 status=400,
                 content_type="application/json"
             )
-        new_post = Post(caption=post_caption, fileName=post_fileName, hashtags=post_hashtags, mediaUrl=post_mediaUrl)
+        new_post = postType(caption=post_caption, fileName=post_fileName, hashtags=post_hashtags, mediaUrl=post_mediaUrl)
 
     except Exception as e:
         logging.error(f"Error parsing JSON: {e}")
@@ -153,5 +155,5 @@ def main(request):
 
 if __name__ == "__main__":
     p = PostPublishingService()
-    newPost = p.publishPost(Post("random", mediaUrl="https://firebasestorage.googleapis.com/v0/b/instagram-autobot-df35b.appspot.com/o/Post%23122%2FPost%23122_1.jpg?alt=media&token=2bb102ad-9bf8-4f88-8c33-07c94c3ba57a", caption="Another one", hashtags="#RunItBack"))
+    newPost = p.publishPost(ImagePost("random", mediaUrl="https://firebasestorage.googleapis.com/v0/b/instagram-autobot-df35b.appspot.com/o/Post%23122%2FPost%23122_1.jpg?alt=media&token=2bb102ad-9bf8-4f88-8c33-07c94c3ba57a", caption="Another one", hashtags="#RunItBack"))
     # p.savePost(newPost)
