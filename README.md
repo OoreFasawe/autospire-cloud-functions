@@ -9,10 +9,10 @@ Instagram Account: [butterman_411](https://www.instagram.com/butterman_411/)
 ## Purpose  
 AutoInspire is a project built to generate and publish motivational posts on Instagram. While designed for motivational content, the framework is flexible enough to support any theme for creating an Instagram account via using differrent prompts.
 
-This is a serverless backend for AutoSpire, an automated system that creates and posts motivational content. Built with Google Cloud Functions, it uses ChatGPT, DALL-E, and the Instagram Graph API to generate, design, and publish posts. Each function deploys independently and connects through Firebase.
+This is a serverless backend for AutoSpire, an automated system that creates and posts motivational content. Built with Google Cloud Functions, it uses ChatGPT, DALL-E, sora-2, the Instagram Graph API and Firebase to generate, store, and publish posts with image and video content. Each function deploys independently, shares data through firebase and connects through http requests.
 
 ## Overview  
-The project is divided into two primary services: the post creation service, which uses OpenAI's ChatGPT and DALL-E models to generate captions, hashtags and images, and the post publishing service, which handles interactions with the Instagram account via the Facebook and Instagram Graph APIs. All post data is stored in Google Firebase database and storage. Additional services may be introduced as the project evolves and more features are added.
+The project is divided into two primary services: the post creation service, which uses OpenAI's ChatGPT and DALL-E models to generate captions, hashtags, images and videos, and the post publishing service, which handles interactions with the Instagram account via the Facebook and Instagram Graph APIs. All post data is stored in Google Firebase database and storage. Additional services may be introduced as the project evolves and more features are added.
 
 ## Setup  
 Coming soon...
