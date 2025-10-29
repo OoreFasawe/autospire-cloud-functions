@@ -1,6 +1,5 @@
 import logging
 import os
-from tkinter import Image
 import requests
 import Utility
 from firebase_functions import https_fn

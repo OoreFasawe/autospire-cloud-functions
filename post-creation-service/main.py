@@ -1,11 +1,9 @@
 import firebase_admin
-import functions_framework
 import logging
 import os
 import random
 import replicate
 import requests
-import sys
 from firebase_admin import firestore, credentials, storage
 from firebase_functions import https_fn
 from flask import jsonify
