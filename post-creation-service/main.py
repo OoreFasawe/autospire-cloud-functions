@@ -284,7 +284,7 @@ def main(request):
     logging.info("Shutting down Post Creation Service")
 
     return https_fn.Response(
-    response=jsonify({"fileName": newPost.fileName, "mediaUrl": newPost.mediaUrl, "caption": newPost.caption, "hashtags": newPost.hashtags}).get_data(as_text=True), 
+    response=jsonify({"fileName": newPost.fileName, "mediaUrl": newPost.mediaUrl, "caption": newPost.caption, "hashtags": newPost.hashtags, "postType": newPost.postType.name}).get_data(as_text=True), 
     content_type="application/json"
     )
 

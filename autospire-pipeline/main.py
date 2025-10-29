@@ -25,6 +25,7 @@ def main(request):
         post_caption = response.get("caption")
         post_mediaUrl = response.get("mediaUrl")
         post_hashtags = response.get("hashtags")
+        post_type = response.get("postType")
 
         if not (post_caption and post_fileName and post_hashtags and post_mediaUrl):
             return https_fn.Response(
@@ -40,7 +41,8 @@ def main(request):
             "caption": post_caption,
             "fileName": post_fileName,
             "hashtags": post_hashtags,
-            "mediaUrl": post_mediaUrl
+            "mediaUrl": post_mediaUrl,
+            "postType": post_type
             }
         response = requests.post(POST_PUBLISHING_SERVICE_URL, headers = headers,json=payload).json()
         if response:
