@@ -33,7 +33,7 @@ class PostCreationService(object):
 
     def createPost(self):
         postType = random.choice([ImagePost, VideoPost])
-        newPost = ImagePost().createPost(creationServiceToUse=self)
+        newPost = VideoPost().createPost(creationServiceToUse=self)
         return newPost
 
     def savePost(self, post: Post):
@@ -206,7 +206,7 @@ class PostCreationService(object):
 
         # Construct preprompt for video generation
         videoGenerationPrePrompt = (
-            f"Create a detailed 4 second **video generation prompt** for the motivational caption '{text}'. "
+            f"Create a detailed 12 second **video generation prompt** for the motivational caption '{text}'. "
             "The prompt must have two structured sections:\n\n"
             "1. **Main Theme:** Describe the scene, emotion, and key visual story. Focus on what happens, who/what moves, and what the camera captures. Avoid abstract or symbolic phrasing — make it tangible and cinematic.\n"
             "2. **Style & Motion Options:** Specify stylistic choices for animation and cinematography. Include options for:\n"
@@ -235,7 +235,7 @@ class PostCreationService(object):
         # Image generation
         input = {
             "prompt": text,
-            "seconds": 4,
+            "seconds": 12,
         }
 
         videoUrl = replicate.run(
