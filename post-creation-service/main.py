@@ -217,7 +217,7 @@ class PostCreationService(object):
             f"texture = {random.choice(visual_textures)}\n"
             f"color palette = {random.choice(color_palettes)}\n"
             f"subject = {random.choice(subjects)}\n\n"
-            "The output should read like a creative director describing the final video scene, suitable for a 4-second short cinematic shot. "
+            "The output should read like a creative director describing the final video scene, suitable for a 12-second short cinematic shot. "
             "Do not include any on-screen text or subtitles."
         )
 
@@ -266,15 +266,6 @@ class PostCreationService(object):
 
 @https_fn.on_request()
 def main(request):
-    """HTTP Cloud Function.
-    Args:
-        request (flask.Request): The request object.
-        <https://flask.palletsprojects.com/en/1.1.x/api/#incoming-request-data>
-    Returns:
-        The response text, or any set of values that can be turned into a
-        Response object using `make_response`
-        <https://flask.palletsprojects.com/en/1.1.x/api/#flask.make_response>.
-    """
     logging.info("Starting Post Creation Service...")
     p = PostCreationService()
     newPost = p.createPost()
