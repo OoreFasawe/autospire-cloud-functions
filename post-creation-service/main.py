@@ -129,7 +129,7 @@ class PostCreationService(object):
         textCompletion = PostCreationService.client.chat.completions.create(
             messages=[{"role": "user", "content": f"{randomPrompt}; no hashtags, just a text. If it is a story, follow the {random.choice(storyTypes)} storytelling type with specific scenarios ad interactions leading to speicifc results, shorter than 100 words.\
                        Also I just don't want it starting with a ' in a <someplace> where <some context>', be creative such that the variance of your results is high and creativity high\
-                       This quote should follow a different pattern structure, probability of weirdness than from these quotes from previous posts:{noRepeatListOnALine}"}],
+                       This quote should follow a different pattern structure, probability of weirdness than from these quotes from previous posts:{noRepeatListOnALine}. Make sure to start it with a hook that grabs attention, pay attention to evoking emotion and and viral motivation"}],
             model="gpt-4o-mini",
             temperature=0.8 
         ).to_dict()
