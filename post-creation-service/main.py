@@ -10,6 +10,7 @@ from flask import jsonify
 from Classes.post_model import Post
 from Classes.image_post_model import ImagePost
 from Classes.video_post_model import VideoPost
+from Utility import art_styles, lighting_moods, lenses, movements
 from openai import OpenAI 
 
 logging.basicConfig(
@@ -127,7 +128,7 @@ class PostCreationService(object):
         noRepeatListOnALine = " ".join(noRepeatList)
     
         textCompletion = PostCreationService.client.chat.completions.create(
-            messages=[{"role": "user", "content": f"{randomPrompt}; no hashtags, just a text. If it is a story, follow the {random.choice(storyTypes)} storytelling type with specific scenarios ad interactions leading to speicifc results, shorter than 100 words.\
+            messages=[{"role": "user", "content": f"{randomPrompt}; no hashtags, just a text. If it is a story, follow the {random.choice(storyTypes)} storytelling type with specific scenarios ad interactions leading to speicifc results, shorter than 50 words.\
                        Also I just don't want it starting with a ' in a <someplace> where <some context>', be creative such that the variance of your results is high and creativity high\
                        This quote should follow a different pattern structure, probability of weirdness than from these quotes from previous posts:{noRepeatListOnALine}. Make sure to start it with a hook that grabs attention, pay attention to evoking emotion and and viral motivation"}],
             model="gpt-4o-mini",
@@ -192,34 +193,51 @@ class PostCreationService(object):
         logging.info(f"Image url: {mediaUrl}\n")
         return mediaUrl
 
+    def getVideoPreprompt(self, caption ):
+        logging.info("Generating Sora-style video prompt...")
+
+        # --- Build advanced preprompt ---
+        videoGenerationPrePrompt = f"""
+            You are a cinematic director crafting a 12-second Sora video prompt for the motivational line:
+            '{caption}'
+
+            Follow this structure exactly:
+
+            Style:
+            Describe the visual medium, texture, and grade (e.g., Choose the most appropriate from the list{(art_styles)}). Mention motion feel, lighting grade, and emotional undertone.
+
+            Scene:
+            Describe the location, key subjects, and moment that visually interpret the motivation. Keep it specific, cinematic, and sensory (what's seen, heard, moving).
+
+            Cinematography:
+            Camera: Choose the most appropriate from the list{(movements)}
+            Lens: Choose the most appropriate from the list{(lenses)}
+            Include framing (close-up, wide), composition details, and motion.
+
+            Lighting:
+            Choose the most appropriate from the list{(lighting_moods)}
+
+            Mood:
+            Summarize emotional pacing and atmosphere (e.g., nostalgic, driven, reflective, triumphant).
+
+            Actions:
+            List 3–5 short beats describing the motion, gestures, or key transitions that unfold during the clip.
+
+            Background Sound:
+            List ambient or natural sounds that enhance realism (e.g., rain, footsteps, wind, distant chatter).
+
+            Rules:
+            - Output only the structured sections above.
+            - Do NOT include any narration or text-on-screen.
+            - Keep descriptions vivid but concise (max 150 words total).
+            """.strip()
+        return videoGenerationPrePrompt
+
     def generateVideo(self, text):
         logging.info("Generating video...")
-
-        # Define categories with possible values
-        video_styles = ["cinematic realism", "documentary style", "anime action", "dreamlike surrealism", "digital art motion"]
-        camera_movements = ["slow pan", "tracking shot", "handheld movement", "steady drone shot", "dynamic zoom-in"]
-        lighting_moods = ["golden hour sunlight", "rainy night neon lights", "soft morning haze", "studio lighting", "moonlit scene"]
-        temporal_paces = ["slow and emotional", "steady natural pacing", "fast energetic rhythm", "time-lapse motion", "dramatic slow-motion"]
-        visual_textures = ["crisp and detailed", "grainy film aesthetic", "soft focus blur", "clean digital look", "vintage tone"]
-        color_palettes = ["warm orange-teal", "muted earth tones", "cool futuristic blues", "pastel gradient hues", "black and white contrast"]
-        subjects = ["a lone traveler", "a team celebrating victory", "an athlete training", "a person finding peace", "a symbolic animal in motion"]
-
         # Construct preprompt for video generation
-        videoGenerationPrePrompt = (
-            f"Create a detailed 12 second **video generation prompt** for the motivational caption '{text}'. "
-            "The prompt must have two structured sections:\n\n"
-            "1. **Main Theme:** Describe the scene, emotion, and key visual story. Focus on what happens, who/what moves, and what the camera captures. Avoid abstract or symbolic phrasing — make it tangible and cinematic.\n"
-            "2. **Style & Motion Options:** Specify stylistic choices for animation and cinematography. Include options for:\n"
-            f"video style = {random.choice(video_styles)}\n"
-            f"camera movement = {random.choice(camera_movements)}\n"
-            f"lighting = {random.choice(lighting_moods)}\n"
-            f"temporal pace = {random.choice(temporal_paces)}\n"
-            f"texture = {random.choice(visual_textures)}\n"
-            f"color palette = {random.choice(color_palettes)}\n"
-            f"subject = {random.choice(subjects)}\n\n"
-            "The output should read like a creative director describing the final video scene, suitable for a 12-second short cinematic shot. "
-            "Do not include any on-screen text or subtitles."
-        )
+        videoGenerationPrePrompt = self.getPreprompt(text)
+        logging.debug(f"Video generation pre prompt: {videoGenerationPrePrompt}")
 
         # Request video generation prompt
         videoGenerationPrompt = PostCreationService.client.chat.completions.create(
@@ -234,7 +252,7 @@ class PostCreationService(object):
         # Using replicate to generate video for now
         # Image generation
         input = {
-            "prompt": text,
+            "prompt": vidPrompt,
             "seconds": 12,
         }
 
