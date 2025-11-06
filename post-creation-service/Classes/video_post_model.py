@@ -1,5 +1,5 @@
 from Classes.post_model import Post, PostTypes
-from ..Utility import last_sentence
+from Utility import last_sentence
 
 class VideoPost(Post):
     def __init__(self, fileName=None, mediaUrl=None, caption=None, hashtags=None):
