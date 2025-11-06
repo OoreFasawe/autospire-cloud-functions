@@ -1,4 +1,5 @@
 from Classes.post_model import Post, PostTypes
+from ..Utility import last_sentence
 
 class VideoPost(Post):
     def __init__(self, fileName=None, mediaUrl=None, caption=None, hashtags=None):
@@ -11,5 +12,6 @@ class VideoPost(Post):
         self.caption = creationServiceToUse.generateCaption(previousPosts)
         self.hashtags = creationServiceToUse.generateHashtags(self.caption)
         self.mediaUrl = creationServiceToUse.generateVideo(self.caption)
+        self.caption = last_sentence(self.caption)
         self.fileName = creationServiceToUse.createFileName()
         return self
