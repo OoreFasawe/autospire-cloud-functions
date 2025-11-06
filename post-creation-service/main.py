@@ -236,7 +236,7 @@ class PostCreationService(object):
     def generateVideo(self, text):
         logging.info("Generating video...")
         # Construct preprompt for video generation
-        videoGenerationPrePrompt = self.getPreprompt(text)
+        videoGenerationPrePrompt = self.getVideoPreprompt(text)
         logging.debug(f"Video generation pre prompt: {videoGenerationPrePrompt}")
 
         # Request video generation prompt
