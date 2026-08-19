@@ -4,7 +4,7 @@ Instagram Account: [butterman_411](https://www.instagram.com/butterman_411/)
 
 ###
 
-<img src="https://firebasestorage.googleapis.com/v0/b/instagram-autobot-df35b.appspot.com/o/IMG_F633978156DD-1.jpeg?alt=media&token=d97fc1ef-3562-4236-811b-c84156739314" alt="Screenshot of sample ig post" width="370" height="600">
+<img src="https://firebasestorage.googleapis.com/v0/b/instagram-autobot-df35b.appspot.com/o/Post%23301.jpg?alt=media&token=f42f2cd2-855d-4b0d-b829-56a6f0c62354" alt="Screenshot of sample ig post" width="370" height="600">
 
 ## Purpose  
 AutoInspire is a project built to generate and publish motivational posts on Instagram. While designed for motivational content, the framework is flexible enough to support any theme for creating an Instagram account via using differrent prompts.
